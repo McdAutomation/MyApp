@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  <meta charset="UTF-8">
+  <title>Restaurant Details</title>
+  
+  
+  
+      <link rel="stylesheet" href="{{ url_for('static', filename='popup.css') }}">
+
+  
+</head>
+
+<body>
+
+  <div class="container">
+	<table>
+		<thead>
+			<tr>
+				<th>NSN</th>
+				<th>Store Name</th>
+				<th>Area</th>
+				<th>Log Time</th>
+				<th>Link</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr class="details">
+				<td id="nsn">Cell 1</td>
+				<td id="fullName">Cell 2</td>
+				<td id="area">Cell 3</td>
+				<td id="time">Cell 4</td>
+                <td id="link"><a href="http://localhost:5601/app/kibana">click here!!</a></td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+  
+  
+
+</body>
+
+</html>
