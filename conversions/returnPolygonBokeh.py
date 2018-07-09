@@ -20,3 +20,9 @@ def returnPDS(p):
     p['y'] = p.apply(getPolyCoords, geom='geometry', coord_type='y', axis=1)
     dropped = p.drop("geometry", axis=1).copy()
     return ColumnDataSource(dropped)
+
+def returnPandasDataFrame(p):
+    p['x'] = p.apply(getPolyCoords, geom='geometry', coord_type='x', axis=1)
+    p['y'] = p.apply(getPolyCoords, geom='geometry', coord_type='y', axis=1)
+    dropped = p.drop("geometry", axis=1).copy()
+    return dropped

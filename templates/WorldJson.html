@@ -3,19 +3,9 @@
 <head>
     <link rel="shortcut icon" href="">
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-
-    <!--<link rel="stylesheet" href="https://cdn.pydata.org/bokeh/release/bokeh-0.12.16.min.css" type="text/css" /> -->
     <link rel="stylesheet" href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.16.min.css" type="text/css" />
-    <!--<script src="https://cdn.pydata.org/bokeh/release/bokeh-0.12.16.min.js"></script> -->
     <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.16.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bokeh/0.12.16/bokeh-gl.min.js"></script>
-
-<!--    <script src="{{ url_for('static', filename='test0.js') }}"></script> -->
-
-
-   <!-- <link rel="stylesheet" href="{{ url_for('static', filename='flipclock_altered.css') }}">
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-    <script src="{{ url_for('static', filename='flipclock.js') }}"></script> -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
 
 <!-- Latest compiled and minified JavaScript -->
@@ -32,7 +22,7 @@
   }
 </style>
     <style>
-        div.analogueTimer {
+        /*div.analogueTimer {
             position: absolute;
             top: 500px;
             left: 50px;
@@ -41,18 +31,28 @@
             //border: 3px solid #73AD21;
             z-index: 1;
         }
+        */
+        div.analogueTimer {
+            position: absolute;
+            top: 537px;
+            left: 1180px;
+            width: 200px;
+            height: 200px;
+            //border: 3px solid #73AD21;
+            z-index: 1;
+        }
         select.selectPriority {
             position: absolute;
-            top: 111px;
-            left: 1265px;
+            top: 72px;
+            left: 1241px;
             width: 118px;
             height: 30px;
             z-index: 1;
         }
         button#refresh00 {
             position: absolute;
-            top: 150px;
-            left: 1265px;
+            top: 121px;
+            left: 1241px;
             width: 118px;
             height: 30px;
             z-index: 1;
@@ -65,15 +65,15 @@
     <div class="analogueTimer">
         <canvas id="canvas" width="200" height="200" style="background-color:'yellow'"></canvas>
     </div>
-    <div class="select">
-        <select  name="sources" id="sources" class="selectPriority"> <!--custom-select sources selectPriority-->
-          <option value="" disabled selected>Select priority</option>
-          <option name="P1" value="1">Priority 1</option>
-          <option name="P2" value="2">Vip Escalations</option>
-          <option name="P3" value="3">Priority 3</option>
-          <option name="P4" value="4">Priority 4</option>
-        </select>
-    </div>
+<div class="select">
+    <select  name="sources" id="sources" class="selectPriority"> <!--custom-select sources selectPriority-->
+      <option value="" disabled selected>Select priority</option>
+      <option name="P1" value="1">Priority 1</option>
+      <option name="P2" value="2">Vip Escalations</option>
+      <option name="P3" value="3">Priority 3</option>
+      <option name="P4" value="4">Priority 4</option>
+    </select>
+</div>
     <button id="refresh00" >refresh</button>
     <script>
     function doAjaxQuery(){
@@ -85,15 +85,11 @@
 
             $.get(url, { d: code} )
             .done(function(data){
-                    var sz = data['x'].length;
-                    //console.log(bp.attributes.data_source.data['ISO2']);
-                    //console.log(bp.attributes.data_source.data['ISO2'].length);
-                    //var sizeOfBokehPatch = bp.attributes.data_source.data['ISO2'].length;
+            // --------------------
+            var sz = data['x'].length;
                     var obj = {}; // lookup using ISO2 , eg obj['US'] = 98 means 98 points for US
                     //if point lies within a particular country:
-                    //var point = [123.06433899999999,-16.44639]
-                    var point = [78.6,32.3]
-                    var len = bp.attributes.data_source.data['ISO2'].length;
+                    var len = bp.attributes.data_source.data['Region'].length;
                     var country_included = { 'AU':true, 'BR':true, 'CN':true, 'FR':true, 'US':true }
                     function inside(point,xArr,yArr) {
                         // ray-casting algorithm based on
@@ -115,89 +111,47 @@
                     for(p=0;p<sz;p++){ // all points
                         point = [ data['x'][p] , data['y'][p] ]
                         for(i=0;i<len;i++){ //check for this point, iterate 3774 rows
-                            if(typeof country_included[bp.attributes.data_source.data['ISO2'][i]] == 'undefined')
-                                continue; // if the country is not included skip
-
                             if(inside(point,bp.attributes.data_source.data['x'][i],bp.attributes.data_source.data['y'][i])){
                                 //console.log(bp.attributes.data_source.data['ISO2'][i]);
-                                if (typeof obj[bp.attributes.data_source.data['ISO2'][i]] !== 'undefined'){
-                                    obj[bp.attributes.data_source.data['ISO2'][i]]+=1;
+                                if (typeof obj[bp.attributes.data_source.data['Region'][i]] !== 'undefined'){
+                                    obj[bp.attributes.data_source.data['Region'][i]]+=1;
                                 }
                                 else{
-                                    obj[bp.attributes.data_source.data['ISO2'][i]]=1;
+                                    obj[bp.attributes.data_source.data['Region'][i]]=1;
                                 }
                             }
                         }
                     }
 
-                    /* based on ISO determine country for point
-
-                    for(i=0;i<sz;i++){
-                        if (typeof obj[data['ISO2'][i]] !== 'undefined'){
-                            obj[data['ISO2'][i]]+=1;
-                        }
-                        else{
-                            obj[data['ISO2'][i]]=1;
-                        }
-                    }
-                    */
-
-                    console.log(obj);
                     //---below for applying gradient after finding out points corresponding to respective country, which obj object has
-                    var colors_gradient = [ '#ff0000','#ff6666','#ffb2b2','#b2ffb2','#00ff00']
+                    // ------------------------------------
+                    var colors_gradient = gradient=["#FF0000","#FF2300","#FF4600","#FF5700","#FF7B00","#FF9E00","#FFC100","#FFE400","#FFF600","#E5FF00","#D4FF00","#C2FF00","#B0FF00","#9FFF00","#8DFF00","#7CFF00","#6AFF00","#58FF00","#47FF00","#35FF00","#24FF00","#12FF00","#00FF00"]
                     var obj1={};
                     colors_gradient.reverse();
                     var num_of_incident = []
                     for(v in obj){
                         num_of_incident.push(obj[v]);
                     }
-                    num_of_incident.sort();
+                    console.log(num_of_incident);
+                    num_of_incident.sort(function(a,b){return a - b});
+                    console.log(num_of_incident);
                     for(i=0;i<num_of_incident.length;i++){
                         for(key in obj){
                                 if(num_of_incident[i] == obj[key]){
                                     obj1[key] = colors_gradient[i]; // green to red
-                                    //console.log(key+""+obj1[key]);
                                     break;
                                 }
                         }
                     }
-                    /*
-                    below for randomizing gradient, which is not working
-                    var colors_gradient = ['FF0000','FF1100','FF2200','FF3300','FF4400','FF5500','FF6600','FF7700','FF8800','FF9900','FFAA00','FFBB00','FFCC00','FFDD00','FFEE00','FFFF00','EEFF00','DDFF00','CCFF00','BBFF00','AAFF00','99FF00','88FF00','77FF00','66FF00','55FF00','44FF00','33FF00','22FF00','11FF00','00FF00'];
-                    colors_gradient.reverse();
-                    var num_of_incident = []
-                    for(v in obj){
-                        num_of_incident.push(obj[v]);
-                    }
-                    num_of_incident.sort();
-                    var length_sorted = num_of_incident.length;
-                    var length_color = colors_gradient.length;
-                    var step = Math.floor(length_color/length_sorted);
-                    var obj1={};
-                    var length_countries_affected = num_of_incident.length;
-                    var i =0;
-                    for(i=0;i<length_countries_affected;i++){
-                        for(key in obj){
-                                if(num_of_incident[i] == obj[key]){
-                                    obj1[key] = colors_gradient[i*step];
-                                    //console.log(key+""+obj1[key]);
-                                    break;
-                                }
-                        }
-                    }
-                    */
 
-                    var length_bokPatch = bp.attributes.data_source.data['ISO2'].length;
-                    console.log(length_bokPatch);
-
+                    var length_bokPatch = bp.attributes.data_source.data['Region'].length;
+                    console.log(obj1);
                     for(i=0;i<length_bokPatch;i++){
-                        if(obj1[bp.attributes.data_source.data['ISO2'][i]]){
-                            //console.log(obj1[bp.attributes.data_source.data['ISO2'][i]]);
-
-                            bp.attributes.data_source.data['COLOR'][i] = obj1[bp.attributes.data_source.data['ISO2'][i]];
+                        if(obj1[bp.attributes.data_source.data['Region'][i]]){
+                            bp.attributes.data_source.data['COLOR'][i] = obj1[bp.attributes.data_source.data['Region'][i]];
                         }
                     }
-
+            // --------------------
                     ds.attributes.data_source.data['x']=data['x'];
                     ds.attributes.data_source.data['y']=data['y'];
                     ds.attributes.data_source.data['color']=data['color'];
@@ -206,38 +160,69 @@
                     ds.attributes.data_source.data['nsn']=data['nsn'];
                     ds.attributes.data_source.data['addressline']=data['addressline'];
 
-                    ds.attributes.data_source.change.emit(); // circles
-                    //bp.attributes.data_source.change.emit(); // country polygon
+                    ds.attributes.data_source.change.emit();
                });
+
     }
 
-    function callFunctions(){
-        doAjaxQuery();
+    function getShadedData(){
+        var data_for_server_us = Bokeh.documents[0].get_model_by_name('circleCDS').attributes.data_source.data;
+        var code = "10";
+        url_temp = "http://127.0.0.1:5000/storesCDS/";
+        console.log(data_for_server_us);
+        //$.post( url, {wtf:"wtfdsf", 'd':data_for_server_us} );
+        $.ajax({
+            type : "POST",
+            url : url_temp,
+            data: JSON.stringify(data_for_server_us, null, '\t'),
+            contentType: 'application/json;charset=UTF-8',
+            success: function(result) {
+               console.log("did it!!",result);
+               var concave_hull_us=Bokeh.documents[0].get_model_by_name('USRegions');
+               concave_hull_us.attributes.data_source.data['x'] = result['x']
+               concave_hull_us.attributes.data_source.data['y'] = result['y']
+               concave_hull_us.attributes.data_source.data['COLOR'] = result['COLOR']
+               concave_hull_us.attributes.data_source.change.emit();
+               console.log(result);
+
+            }
+        });
     }
+    function plotPoints(){
+        url = "http://127.0.0.1:5000/storesCDS/";
+        var code = $("#sources option:selected").val();
+
+        var ds = Bokeh.documents[0].get_model_by_name('circleCDS');
+
+        $.get(url, { d: code} )
+            .done(function(data){
+        var ds = Bokeh.documents[0].get_model_by_name('circleCDS');
+        ds.attributes.data_source.data['x']=data['x'];
+        ds.attributes.data_source.data['y']=data['y'];
+        ds.attributes.data_source.data['color']=data['color'];
+        ds.attributes.data_source.data['name']=data['name'];
+        ds.attributes.data_source.data['time']=data['time'];
+        ds.attributes.data_source.data['nsn']=data['nsn'];
+        ds.attributes.data_source.data['addressline']=data['addressline'];
+
+        ds.attributes.data_source.change.emit();
+    });
+}
+
+
+    function callFunctions(){
+        $.when( plotPoints() ).done(function() {
+            //setTimeout(getShadedData,500);
+            //getShadedData();
+
+        });
+
+    }
+
         $("#refresh00").click(callFunctions);
         $( "select.selectPriority" ).change(callFunctions);
     </script>
     <!-------------------------------------->
-
-    <script>
-       /*
-        // Attach a submit handler to the form
-        $( "select.selectPriority" ).change(function( event ) {
-          // Get some values from elements on the page:
-          url = "http://127.0.0.1:5000/stores/";
-          var code = $("#sources option:selected").val();
-          console.log(code)
-          // Send the data using post
-          //var posting = $.post( url, { d: code} );
-
-          $.get(url, { d: code} )
-            .done(function(data){
-                console.log("data loaded: ");
-               });
-
-        });
-        */
-    </script>
 
     <script>
 
@@ -261,33 +246,210 @@
 
     <script src="{{ url_for('static', filename='canvas.js') }}"></script>
 
+<!-- -->
+<div id="fdw-pricing-table">
+    <div class="plan plan1">
+        <div class="header" id="region">Region</div>
+        <div class="price" id="count">Inc count</div>
+        <div class="monthly">Total Incidents</div>
+        <ul>
+            <!--<li><b>Number</b> Stores</li>
+            <li><b>100GB</b> Monthly Bandwidth</li>
+            <li><b>20</b> Email Accounts</li>
+			<li><b>Unlimited</b> subdomains</li> -->
+        </ul>
+        <a class="Click" href="http://www.google.com">Click</a>
+    </div>
+</div>
 <style>
-    select.upper_toolbar_select {
-            position: relative;
-            top: 0px;
-            right: 0px;
-            width: 115px;
-            height: 30px;
-            z-index: 1;
-        }
+#fdw-pricing-table {
+		/*margin:0 auto;
+        left: 1180;
+        top: 200;
+
+		width: 928px; /* total computed width */
+		zoom: 1;
+        position: absolute;
+        top: 200px;
+        left: 1180px;
+        width: 80;
+        height: 30px;
+        z-index: 1;
+        text-align: center;
+	}
+
+	#fdw-pricing-table:before, #fdw-pricing-table:after {
+	  content: "";
+	  display: table
+	}
+
+	#fdw-pricing-table:after {
+	  clear: both
+	}
+
+	/* --------------- */
+
+	#fdw-pricing-table .plan {
+		font: 13px 'Lucida Sans', 'trebuchet MS', Arial, Helvetica;
+		background: #fff;
+		border: 1px solid #ddd;
+		color: #333;
+		padding: 20px;
+		width: 180px;
+		float: left;
+		_display: inline; /* IE6 double margin fix */
+		position: relative;
+		margin: 0 5px;
+		-moz-box-shadow: 0 2px 2px -1px rgba(0,0,0,.3);
+		-webkit-box-shadow: 0 2px 2px -1px rgba(0,0,0,.3);
+		box-shadow: 0 2px 2px -1px rgba(0,0,0,.3);
+	}
+
+	#fdw-pricing-table .plan:after {
+	  z-index: -1;
+	  position: absolute;
+	  content: "";
+	  bottom: 10px;
+	  right: 4px;
+	  width: 80%;
+	  top: 80%;
+	  -webkit-box-shadow: 0 12px 5px rgba(0, 0, 0, .3);
+	  -moz-box-shadow: 0 12px 5px rgba(0, 0, 0, .3);
+	  box-shadow: 0 12px 5px rgba(0, 0, 0, .3);
+	  -webkit-transform: rotate(3deg);
+	  -moz-transform: rotate(3deg);
+	  -o-transform: rotate(3deg);
+	  -ms-transform: rotate(3deg);
+	  transform: rotate(3deg);
+	}
+
+	#fdw-pricing-table .popular-plan {
+		top: -20px;
+		padding: 40px 20px;
+	}
+
+	/* --------------- */
+
+	#fdw-pricing-table .header {
+		position: relative;
+		font-size: 20px;
+		font-weight: normal;
+		text-transform: uppercase;
+		padding: 40px;
+		margin: -20px -20px 20px -20px;
+		border-bottom: 8px solid;
+		background-color: #eee;
+		background-image: -moz-linear-gradient(#fff,#eee);
+		background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+		background-image: -webkit-linear-gradient(#fff, #eee);
+		background-image: -o-linear-gradient(#fff, #eee);
+		background-image: -ms-linear-gradient(#fff, #eee);
+		background-image: linear-gradient(#fff, #eee);
+	}
+
+	#fdw-pricing-table .header:after {
+		position: absolute;
+		bottom: -8px; left: 0;
+		height: 3px; width: 100%;
+		content: '';
+		background-image: url(images/bar.png);
+	}
+
+	#fdw-pricing-table .popular-plan .header {
+		margin-top: -40px;
+		padding-top: 60px;
+	}
+
+	#fdw-pricing-table .plan1 .header{
+		border-bottom-color: #B3E03F;
+	}
+
+	#fdw-pricing-table .plan2 .header{
+		border-bottom-color: #7BD553;
+	}
+
+	#fdw-pricing-table .plan3 .header{
+		border-bottom-color: #3AD5A0;
+	}
+
+	#fdw-pricing-table .plan4 .header{
+		border-bottom-color: #45D0DA;
+	}
+
+	/* --------------- */
+
+	#fdw-pricing-table .price{
+		font-size: 45px;
+	}
+
+	#fdw-pricing-table .monthly{
+		font-size: 13px;
+		margin-bottom: 20px;
+		text-transform: uppercase;
+		color: #999;
+	}
+
+	/* --------------- */
+
+	#fdw-pricing-table ul {
+		margin: 20px 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	#fdw-pricing-table li {
+		padding: 10px 0;
+	}
+
+	/* --------------- */
+
+	#fdw-pricing-table .signup {
+		position: relative;
+		padding: 10px 20px;
+		color: #fff;
+		font: bold 14px Arial, Helvetica;
+		text-transform: uppercase;
+		text-decoration: none;
+		display: inline-block;
+		background-color: #72ce3f;
+		-moz-border-radius: 3px;
+		-webkit-border-radius: 3px;
+		border-radius: 3px;
+		text-shadow: 0 -1px 0 rgba(0,0,0,.15);
+		opacity: .9;
+	}
+
+	#fdw-pricing-table .signup:hover {
+		opacity: 1;
+	}
+
+	#fdw-pricing-table .signup:active {
+		-moz-box-shadow: 0 2px 2px rgba(0,0,0,.3) inset;
+		-webkit-box-shadow: 0 2px 2px rgba(0,0,0,.3) inset;
+		box-shadow: 0 2px 2px rgba(0,0,0,.3) inset;
+	}
+
+	#fdw-pricing-table .plan1 .signup{
+		background: #B3E03F;
+	}
+
+	#fdw-pricing-table .plan2 .signup{
+		background: #7BD553;
+	}
+
+	#fdw-pricing-table .plan3 .signup{
+		background: #3AD5A0;
+	}
+
+	#fdw-pricing-table .plan4 .signup{
+		background: #45D0DA;
+	}
+
 </style>
-
-
-        <div class="upper_toolbar_select">
-            <select  class="upper_toolbar_select"> <!--custom-select sources selectPriority-->
-              <option value="" disabled selected>Select priority</option>
-              <option name="P1" value="1">Priority 1</option>
-              <option name="P2" value="2">Vip Escalations</option>
-              <option name="P3" value="3">Priority 3</option>
-              <option name="P4" value="4">Priority 4</option>
-            </select>
-        </div>
-
+<!-- -->
 <div class="worldMap">
     {{ script|safe }}
     {{ div|safe }}
 </div>
-
-
 </body>
 </html>

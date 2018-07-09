@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <link rel="shortcut icon" href="">
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <link rel="stylesheet" href="http://cdn.pydata.org/bokeh/release/bokeh-0.12.16.min.css" type="text/css" />
+    <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-0.12.16.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bokeh/0.12.16/bokeh-gl.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
+
+    <!-- this style is for bokeh 0.12.16--><style>
+  html {
+    width: 100%;
+    height: 100%;
+  }
+  body {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+    <style>
+        div.analogueTimer {
+            position: absolute;
+            top: 500px;
+            left: 50px;
+            width: 200px;
+            height: 200px;
+            //border: 3px solid #73AD21;
+            z-index: 1;
+        }
+        select.selectPriority {
+            position: absolute;
+            top: 72px;
+            left: 1241px;
+            width: 118px;
+            height: 30px;
+            z-index: 1;
+        }
+        button#refresh00 {
+            position: absolute;
+            top: 121px;
+            left: 1241px;
+            width: 118px;
+            height: 30px;
+            z-index: 1;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="analogueTimer">
+        <canvas id="canvas" width="200" height="200" style="background-color:'yellow'"></canvas>
+    </div>
+    <div class="select">
+        <select  name="sources" id="sources" class="selectPriority"> <!--custom-select sources selectPriority-->
+          <option value="" disabled selected>Select priority</option>
+          <option name="P1" value="1">Priority 1</option>
+          <option name="P2" value="2">Vip Escalations</option>
+          <option name="P3" value="3">Priority 3</option>
+          <option name="P4" value="4">Priority 4</option>
+        </select>
+    </div>
+    <button id="refresh00" >refresh</button>
+    <script>
+    function doAjaxQuery(){
+            url = "http://127.0.0.1:5000/storesCDS/";
+            var code = $("#sources option:selected").val();
+
+            var ds = Bokeh.documents[0].get_model_by_name('circleCDS');
+            var bp = Bokeh.documents[0].get_model_by_name('bokehPatch');
+
+            $.get(url, { d: code} )
+            .done(function(data){
+            // --------------------
+            var sz = data['x'].length;
+                    var obj = {}; // lookup using ISO2 , eg obj['US'] = 98 means 98 points for US
+                    //if point lies within a particular country:
+                    var len = bp.attributes.data_source.data['Region'].length;
+                    var country_included = { 'AU':true, 'BR':true, 'CN':true, 'FR':true, 'US':true }
+                    function inside(point,xArr,yArr) {
+                        // ray-casting algorithm based on
+                        // http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
+
+                        var x = point[0], y = point[1];
+
+                        var inside = false;
+                        for (var i = 0, j = xArr.length - 1; i < xArr.length; j = i++) {
+                            var xi = xArr[i], yi = yArr[i];
+                            var xj = xArr[j], yj = yArr[j];
+
+                            var intersect = ((yi > y) != (yj > y))
+                                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                            if (intersect) inside = !inside;
+                        }
+                        return inside;
+                    };
+                    for(p=0;p<sz;p++){ // all points
+                        point = [ data['x'][p] , data['y'][p] ]
+                        for(i=0;i<len;i++){ //check for this point, iterate 3774 rows
+                            if(inside(point,bp.attributes.data_source.data['x'][i],bp.attributes.data_source.data['y'][i])){
+                                //console.log(bp.attributes.data_source.data['ISO2'][i]);
+                                if (typeof obj[bp.attributes.data_source.data['Region'][i]] !== 'undefined'){
+                                    obj[bp.attributes.data_source.data['Region'][i]]+=1;
+                                }
+                                else{
+                                    obj[bp.attributes.data_source.data['Region'][i]]=1;
+                                }
+                            }
+                        }
+                    }
+
+                    //---below for applying gradient after finding out points corresponding to respective country, which obj object has
+                    // ------------------------------------
+                    var colors_gradient = gradient=["#FF0000","#FF2300","#FF4600","#FF5700","#FF7B00","#FF9E00","#FFC100","#FFE400","#FFF600","#E5FF00","#D4FF00","#C2FF00","#B0FF00","#9FFF00","#8DFF00","#7CFF00","#6AFF00","#58FF00","#47FF00","#35FF00","#24FF00","#12FF00","#00FF00"]
+                    var obj1={};
+                    colors_gradient.reverse();
+                    var num_of_incident = []
+                    for(v in obj){
+                        num_of_incident.push(obj[v]);
+                    }
+                    console.log(num_of_incident);
+                    num_of_incident.sort(function(a,b){return a - b});
+                    console.log(num_of_incident);
+                    for(i=0;i<num_of_incident.length;i++){
+                        for(key in obj){
+                                if(num_of_incident[i] == obj[key]){
+                                    obj1[key] = colors_gradient[i]; // green to red
+                                    break;
+                                }
+                        }
+                    }
+
+                    var length_bokPatch = bp.attributes.data_source.data['Region'].length;
+                    console.log(obj1);
+                    for(i=0;i<length_bokPatch;i++){
+                        if(obj1[bp.attributes.data_source.data['Region'][i]]){
+                            bp.attributes.data_source.data['COLOR'][i] = obj1[bp.attributes.data_source.data['Region'][i]];
+                        }
+                    }
+            // --------------------
+                    ds.attributes.data_source.data['x']=data['x'];
+                    ds.attributes.data_source.data['y']=data['y'];
+                    ds.attributes.data_source.data['color']=data['color'];
+                    ds.attributes.data_source.data['name']=data['name'];
+                    ds.attributes.data_source.data['time']=data['time'];
+                    ds.attributes.data_source.data['nsn']=data['nsn'];
+                    ds.attributes.data_source.data['addressline']=data['addressline'];
+
+                    ds.attributes.data_source.change.emit();
+               });
+
+    }
+
+    function getShadedData(){
+        var data_for_server_us = Bokeh.documents[0].get_model_by_name('circleCDS').attributes.data_source.data;
+        var code = "10";
+        url_temp = "http://127.0.0.1:5000/storesCDS/";
+        console.log(data_for_server_us);
+        //$.post( url, {wtf:"wtfdsf", 'd':data_for_server_us} );
+        $.ajax({
+            type : "POST",
+            url : url_temp,
+            data: JSON.stringify(data_for_server_us, null, '\t'),
+            contentType: 'application/json;charset=UTF-8',
+            success: function(result) {
+               console.log("did it!!",result);
+               var concave_hull_us=Bokeh.documents[0].get_model_by_name('USRegions');
+               concave_hull_us.attributes.data_source.data['x'] = result['x']
+               concave_hull_us.attributes.data_source.data['y'] = result['y']
+               concave_hull_us.attributes.data_source.data['COLOR'] = result['COLOR']
+               concave_hull_us.attributes.data_source.change.emit();
+               console.log(result);
+
+            }
+        });
+    }
+    function plotPoints(){
+        var ds = Bokeh.documents[0].get_model_by_name('circleCDS');
+        ds.attributes.data_source.data['x']=data['x'];
+        ds.attributes.data_source.data['y']=data['y'];
+        ds.attributes.data_source.data['color']=data['color'];
+        ds.attributes.data_source.data['name']=data['name'];
+        ds.attributes.data_source.data['time']=data['time'];
+        ds.attributes.data_source.data['nsn']=data['nsn'];
+        ds.attributes.data_source.data['addressline']=data['addressline'];
+
+        ds.attributes.data_source.change.emit(); // circles
+    }
+
+
+    function callFunctions(){
+        $.when( doAjaxQuery() ).done(function() {
+            //setTimeout(getShadedData,500);
+            //getShadedData();
+
+        });
+
+    }
+
+        $("#refresh00").click(callFunctions);
+        $( "select.selectPriority" ).change(callFunctions);
+    </script>
+    <!-------------------------------------->
+
+    <script>
+
+    $('body').click(function(evt){
+    if( window.toBeClearedTimer == 1 )
+        {
+            window.toBeClearedAfterDrawing = 2; // to stop timer executing continuously
+            window.drawnTimer = 0;
+
+            //console.log("needs to be cleared");
+            ctx.clearRect(-radius-5, -radius-5, canvas.width, canvas.height);
+            window.toBeClearedTimer = 0;
+        }
+    else
+        {
+            //console.log("NO NEED");
+        }
+    });
+
+    </script>
+
+    <script src="{{ url_for('static', filename='canvas.js') }}"></script>
+
+<div class="worldMap">
+    {{ script|safe }}
+    {{ div|safe }}
+</div>
+
+
+</body>
+</html>

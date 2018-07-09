@@ -1,0 +1,109 @@
+@app.route('/storesCDS/', methods=['GET','POST'])
+def post_data_storesCDS():
+    es = Elasticsearch()
+    variable = {'x': [], 'y': [],'nsn':[],'addressline':[], 'name': [], 'time': [], 'color': [], 'ISO2':[]}
+    prioritycolors = {}
+    # red yellow fuchsia aqua
+    prioritycolors[1] = "blue"
+    prioritycolors[2] = "blue"
+    prioritycolors[3] = 'blue'
+    prioritycolors[4] = 'blue'
+   # global errorcode
+    if request.method == 'GET':
+        #_data_temp.to_csv('C:/Users/atrivedy/Documents/Visualilzation/plotting/thisisit.csv', sep=',')  # temporary
+
+        errorcode = request.args.get('d')
+    #    global searchbody
+        # if errorcode == '1':
+        searchbody = {
+            "size": 1000,
+            "query": {
+                "term": {
+                    "error": int(errorcode)
+                }
+            }
+        }
+        response = es.search(index="stores_ecp", body=searchbody,request_timeout=30)
+        if response["hits"]["total"] >= 1:
+            for hit in response['hits']['hits']:
+                #variable['x'].append(float(restaurant_data.loc[restaurant_data['NatlStrNumber'] == int(hit['_source']['nsn'])]['Longitude']))
+                #variable['y'].append(float(restaurant_data.loc[restaurant_data['NatlStrNumber'] == int(hit['_source']['nsn'])]['Latitude']))
+                if hit['_source']['ISO2'] == 'AU':
+                    variable['ISO2'].append('AU')
+                    variable['x'].append(float(
+                        restaurant_data_AU.loc[restaurant_data_AU['NatlStrNumber'] == int(hit['_source']['nsn'])][
+                            'Longitude']))
+                    variable['y'].append(float(
+                        restaurant_data_AU.loc[restaurant_data_AU['NatlStrNumber'] == int(hit['_source']['nsn'])][
+                            'Latitude']))
+                elif hit['_source']['ISO2'] == 'BR':
+                    variable['ISO2'].append('BR')
+                    variable['x'].append(float(
+                        restaurant_data_BR.loc[restaurant_data_BR['NatlStrNumber'] == int(hit['_source']['nsn'])][
+                            'Longitude']))
+                    variable['y'].append(float(
+                        restaurant_data_BR.loc[restaurant_data_BR['NatlStrNumber'] == int(hit['_source']['nsn'])][
+                            'Latitude']))
+                elif hit['_source']['ISO2'] == 'CN':
+                    variable['ISO2'].append('CN')
+                    variable['x'].append(float(
+                        restaurant_data_CN.loc[restaurant_data_CN['NatlStrNumber'] == int(hit['_source']['nsn'])][
+                            'Longitude']))
+                    variable['y'].append(float(
+                        restaurant_data_CN.loc[restaurant_data_CN['NatlStrNumber'] == int(hit['_source']['nsn'])][
+                            'Latitude']))
+                elif hit['_source']['ISO2'] == 'FR':
+                    variable['ISO2'].append('FR')
+                    variable['x'].append(float(
+                        restaurant_data_FR.loc[restaurant_data_FR['NatlStrNumber'] == int(hit['_source']['nsn'])][
+                            'Longitude']))
+                    variable['y'].append(float(
+                        restaurant_data_FR.loc[restaurant_data_FR['NatlStrNumber'] == int(hit['_source']['nsn'])][
+                            'Latitude']))
+                elif hit['_source']['ISO2'] == 'US':
+                    variable['ISO2'].append('US')
+                    variable['x'].append(float(
+                        restaurant_data_US.loc[restaurant_data_US['NatlStrNumber'] == int(hit['_source']['nsn'])][
+                            'Longitude']))
+                    variable['y'].append(float(
+                        restaurant_data_US.loc[restaurant_data_US['NatlStrNumber'] == int(hit['_source']['nsn'])][
+                            'Latitude']))
+
+                variable['name'].append(hit['_source']['name'])
+                variable['time'].append(hit['_source']['timestamp'])
+                variable['color'].append(prioritycolors[int(errorcode)])
+                variable['nsn'].append(hit['_source']['nsn'])
+                variable['addressline'].append(hit['_source']['addressline'])
+
+        return jsonify(variable)
+    if request.method == 'POST':
+        concave_hull_column_data_source = []
+        data = request.json
+
+        return jsonify({'success':True})
+
+
+'''
+@app.route('/update/', methods=['GET'])
+def update_region():
+    variable = {}
+    if request.method == 'GET':
+        errorcode = request.args.get('d')
+        print(_data_temp.loc[_data_temp["GEOID"]==int(errorcode)]['Region'])
+        _data_temp['Region'].loc[_data_temp["GEOID"] == int(errorcode)] = 'MIDWEST REGION'
+
+        variable['GEOID'] = errorcode
+        return jsonify(variable)
+'''
+
+
+/*
+                url = "http://127.0.0.1:5000/update/";
+                var code = source.data["GEOID"][selectedVariable];
+
+                $.get(url, { d: code} )
+                    .done(function(data){
+                        console.log("after updating");
+                        console.log(data["GEOID"]);
+                        });
+                */
