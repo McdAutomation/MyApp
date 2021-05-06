@@ -16,7 +16,7 @@ elasticsearch==6.2.0
 entrypoints==0.2.3
 fiona==1.7.11.post1
 Flask==0.12.2
-Flask-Cors==3.0.3
+Flask-Cors==3.0.9
 GDAL==2.2.3
 geopandas==0.3.0
 geopy==1.11.0
